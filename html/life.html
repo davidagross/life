@@ -1,0 +1,568 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>life</title><meta name="generator" content="MATLAB 8.0"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-01-05"><meta name="DC.source" content="life.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#3">Cells</a></li><li><a href="#4">Arrays</a></li><li><a href="#5">Finally</a></li><li><a href="#6">Plotting</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> R = life(N,R,env,plotSkip)
+</pre><pre class="codeinput"><span class="comment">%LIFE walks us through the APL rules of life [1] and tries to recreate them</span>
+<span class="comment">%</span>
+<span class="comment">%USAGE</span>
+<span class="comment">%   R = life</span>
+<span class="comment">%   R = life(N,R,env,plotSkip)</span>
+<span class="comment">%</span>
+<span class="comment">%INPUTS</span>
+<span class="comment">%   N &lt;1x1 DOUBLE&gt; is the number of generations to run in the program.</span>
+<span class="comment">%</span>
+<span class="comment">%   R &lt;MxN DOUBLE&gt; is the seed configuration you would like to plant.</span>
+<span class="comment">%</span>
+<span class="comment">%   env &lt;2x1 DOUBLE&gt; is the row and column sizes of the environment in</span>
+<span class="comment">%   which to embed the seed state R.</span>
+<span class="comment">%</span>
+<span class="comment">%   plotSkip &lt;1x1 DOUBLE&gt; is the number of steps to skip between plotting</span>
+<span class="comment">%   generations.</span>
+<span class="comment">%</span>
+<span class="comment">%OUTPUTS</span>
+<span class="comment">%   R &lt;env(1)xenv(2) DOUBLE&gt; is the final state of the program</span>
+<span class="comment">%</span>
+<span class="comment">%REFERENCES</span>
+<span class="comment">%   [1] http://youtu.be/a9xAKttWgP4</span>
+<span class="comment">%</span>
+<span class="comment">% See also</span>
+<span class="comment">%   ismember, circshift, reshape, cellfun, sum, cell2mat, logical</span>
+
+<span class="comment">%AUTHORSHIP</span>
+<span class="comment">%   Created by David Gross</span>
+
+<span class="comment">% Set default generation count</span>
+<span class="keyword">if</span> nargin &lt; 1, N = 100; <span class="keyword">end</span>
+
+<span class="comment">% set default environment</span>
+<span class="keyword">if</span> nargin &lt; 3, env = [15,35]; <span class="keyword">end</span>
+
+<span class="comment">% set default seed state</span>
+<span class="keyword">if</span> nargin &lt; 2
+    <span class="comment">% glider</span>
+    <span class="comment">% r = ismember(reshape(0:8,3,3)',[2 3 5 7 8]);</span>
+    <span class="comment">% f-pentomino</span>
+    <span class="comment">% r = ismember(reshape(0:8,3,3)',[1 3 4 5 6]);</span>
+    <span class="comment">% R = circshift( ...</span>
+    <span class="comment">%     [r,zeros(3,env(2)-3);zeros(env(1)-3,env(2))],floor((env-3)/2));</span>
+    <span class="comment">% Life in APL video</span>
+    r = ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+    R = circshift( <span class="keyword">...</span>
+        [r,zeros(3,env(2)-3);zeros(env(1)-3,env(2))],floor((env-3)/2));
+<span class="keyword">end</span>
+
+<span class="comment">% set default plot skip</span>
+<span class="keyword">if</span> nargin &lt; 4, plotSkip = 1; <span class="keyword">end</span>
+</pre><h2>Cells<a name="3"></a></h2><pre class="codeinput"><span class="comment">% vector of first 9 natural numbers</span>
+0:8;
+<span class="comment">% 3 x 3 reshape</span>
+reshape(0:8,3,3)';
+<span class="comment">% which items are members of 1 2 3 4 7 ?</span>
+ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+<span class="comment">% call it r</span>
+r = ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+<span class="comment">% 5 7 take of r (padding below and on the right with zeros)</span>
+[r , zeros(3,7-3) ; zeros(5-3,7)];
+<span class="comment">% center vertically</span>
+circshift([r , zeros(3,7-3) ; zeros(5-3,7)],[0,2]);
+<span class="comment">% % center horizontally</span>
+circshift([r , zeros(3,7-3) ; zeros(5-3,7)],[1,2]);
+<span class="comment">% call it R</span>
+R = circshift( <span class="keyword">...</span>
+    [r,zeros(3,env(2)-3);zeros(env(1)-3,env(2))],floor((env-3)/2));
+<span class="comment">% vector of three matrics</span>
+{R,R,R};
+<span class="comment">% rotate individually</span>
+cellfun(@circshift,{R,R,R},{[-1,0],[0,0],[1,0]},<span class="string">'UniformOutput'</span>,false);
+<span class="comment">% we can't really "enclose" R to be copied</span>
+
+<span class="comment">% outer product?  ok we can't do that either</span>
+cellfun(@circshift,{R,R,R;R,R,R;R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1];[-1,0],[0,0],[1,0];[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false);
+<span class="comment">% column sum alone? can't do that</span>
+
+<span class="comment">% row sum alone?  nope.  but we can do the whole thing, kind of</span>
+sum(reshape(cell2mat(cellfun(@circshift, <span class="keyword">...</span>
+    {R,R,R,R,R,R,R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false)),[size(R),9]),3);
+<span class="comment">% find the 3s and 4s</span>
+cellfun(@(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, <span class="keyword">...</span>
+    {R,R,R,R,R,R,R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false)),[size(R),9]),3), <span class="keyword">...</span>
+    num),{3,4},<span class="string">'UniformOutput'</span>,false);
+<span class="comment">% and the 4s with the original matrix</span>
+cellfun(@and,cellfun( <span class="keyword">...</span>
+    @(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, <span class="keyword">...</span>
+    {R,R,R,R,R,R,R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false)),[size(R),9]),3), <span class="keyword">...</span>
+    num),{3,4},<span class="string">'UniformOutput'</span>,false), <span class="keyword">...</span>
+    {ones(size(R)),R},<span class="string">'UniformOutput'</span>,false);
+<span class="comment">% or the results to get the next generation of life</span>
+logical(sum(cell2mat(reshape(cellfun(@and,cellfun( <span class="keyword">...</span>
+    @(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, <span class="keyword">...</span>
+    {R,R,R,R,R,R,R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false)),[size(R),9]),3), <span class="keyword">...</span>
+    num),{3,4},<span class="string">'UniformOutput'</span>,false), <span class="keyword">...</span>
+    {ones(size(R)),R},<span class="string">'UniformOutput'</span>,false),[1,1,2])),3));
+</pre><h2>Arrays<a name="4"></a></h2><pre class="codeinput"><span class="comment">% vector of first 9 natural numbers</span>
+0:8;
+<span class="comment">% 3 x 3 reshape</span>
+reshape(0:8,3,3)';
+<span class="comment">% which items are members of 1 2 3 4 7 ?</span>
+ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+<span class="comment">% call it r</span>
+r = ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+<span class="comment">% 5 7 take of r (padding below and on the right with zeros)</span>
+[r , zeros(3,7-3) ; zeros(5-3,7)];
+<span class="comment">% center vertically</span>
+circshift([r , zeros(3,7-3) ; zeros(5-3,7)],[0,2]);
+<span class="comment">% % center horizontally</span>
+circshift([r , zeros(3,7-3) ; zeros(5-3,7)],[1,2]);
+<span class="comment">% call it R</span>
+R = circshift( <span class="keyword">...</span>
+    [r,zeros(3,env(2)-3);zeros(env(1)-3,env(2))],floor((env-3)/2));
+<span class="comment">% vector of three matrics</span>
+cat(3,R,R,R);
+<span class="comment">% rotate individually</span>
+<span class="comment">% add extra padding (ENFORCES NON-TOROIDAL BOUNDARIES)</span>
+bigR = [zeros(1,size(R,2)+2) ; <span class="keyword">...</span>
+    zeros(size(R,1),1) R zeros(size(R,1),1) ; zeros(1,size(R,2)+2)];
+cellfun(@circshift,{R,R,R},{[-1,0],[0,0],[1,0]},<span class="string">'UniformOutput'</span>,false);
+<span class="comment">% we can't really "enclose" R to be copied</span>
+
+<span class="comment">% outer product?  ok we can't do that either</span>
+cellfun(@circshift,{R,R,R;R,R,R;R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1];[-1,0],[0,0],[1,0];[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false);
+subsref(repmat(bigR,[3,3]),struct(<span class="string">'type'</span>,<span class="string">'()'</span>,<span class="string">'subs'</span>,{{ <span class="keyword">...</span>
+    [1:env(1),env(1)+4:2*env(1)+3,2*env(1)+7:3*env(1)+6], <span class="keyword">...</span>
+    [1:env(2),env(2)+4:2*env(2)+3,2*env(2)+7:3*env(2)+6]}}));
+<span class="comment">% column sum alone? can't do that</span>
+
+<span class="comment">% row sum alone?  nope.  but we can do the whole thing, kind of</span>
+sum(reshape(cell2mat(cellfun(@circshift,{R,R,R,R,R,R,R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false)),[size(R),9]),3);
+sum(reshape(permute(reshape(subsref(repmat(bigR,[3,3]), <span class="keyword">...</span>
+    struct(<span class="string">'type'</span>,<span class="string">'()'</span>,<span class="string">'subs'</span>,{{ <span class="keyword">...</span>
+    [1:env(1),env(1)+4:2*env(1)+3,2*env(1)+7:3*env(1)+6], <span class="keyword">...</span>
+    [1:env(2),env(2)+4:2*env(2)+3,2*env(2)+7:3*env(2)+6]}})), <span class="keyword">...</span>
+    [size(R,1),3,size(R,2),3]),[1,3,2,4]),[size(R),9]),3);
+<span class="comment">% find the 3s and 4s</span>
+cellfun(@(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, <span class="keyword">...</span>
+    {R,R,R,R,R,R,R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false)),[size(R),9]),3), <span class="keyword">...</span>
+    num),{3,4},<span class="string">'UniformOutput'</span>,false);
+<span class="comment">% and the 4s with the original matrix</span>
+cellfun(@and,cellfun( <span class="keyword">...</span>
+    @(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, <span class="keyword">...</span>
+    {R,R,R,R,R,R,R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false)),[size(R),9]),3), <span class="keyword">...</span>
+    num),{3,4},<span class="string">'UniformOutput'</span>,false), <span class="keyword">...</span>
+    {ones(size(R)),R},<span class="string">'UniformOutput'</span>,false);
+<span class="comment">% or the results to get the next generation of life</span>
+logical(sum(cell2mat(reshape(cellfun(@and,cellfun( <span class="keyword">...</span>
+    @(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, <span class="keyword">...</span>
+    {R,R,R,R,R,R,R,R,R}, <span class="keyword">...</span>
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+    <span class="string">'UniformOutput'</span>,false)),[size(R),9]),3), <span class="keyword">...</span>
+    num),{3,4},<span class="string">'UniformOutput'</span>,false), <span class="keyword">...</span>
+    {ones(size(R)),R},<span class="string">'UniformOutput'</span>,false),[1,1,2])),3));
+</pre><h2>Finally<a name="5"></a></h2><pre class="codeinput"><span class="comment">% APL says:</span>
+<span class="string">'life ? {?1 ? ?.? 3 4 = +/ +?? 1 0 -1 ?.? 1 0 -1 ?&uml; ? ?}'</span>;
+<span class="comment">% MATLAB cellfun says:</span>
+life = @(R) logical(sum(cell2mat(reshape(cellfun(@and,cellfun(@(num) <span class="keyword">...</span>
+ismember(sum(reshape(cell2mat(cellfun(@circshift,{R,R,R,R,R,R,R,R,R},<span class="keyword">...</span>
+{[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+<span class="string">'UniformOutput'</span>,false)),[size(R),9]),3),num),{3,4},<span class="string">'UniformOutput'</span>, <span class="keyword">...</span>
+false),{ones(size(R)),R},<span class="string">'UniformOutput'</span>,false),[1,1,2])),3));
+<span class="comment">% What if matlab commands were name with only one letter</span>
+<span class="comment">% A = and</span>
+<span class="comment">% C = circshfit</span>
+<span class="comment">% f = false</span>
+<span class="comment">% F = cellfun</span>
+<span class="comment">% I = ismember</span>
+<span class="comment">% L = logical</span>
+<span class="comment">% M = cell2mat</span>
+<span class="comment">% O = ones</span>
+<span class="comment">% P = repmat</span>
+<span class="comment">% R = reshape</span>
+<span class="comment">% S = sum</span>
+<span class="comment">% U = 'UniformOutput'</span>
+<span class="comment">% Z = size</span>
+life = @(R) L(S(M(R(F(@A,F(@(N)I(S(R(M(F(@C,P({R},[1,9]),<span class="keyword">...</span>
+{[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, <span class="keyword">...</span>
+U,f)),[S(R),9]),3),N),{3,4},U,f),{O(Z(R)),R},U,f),[1,1,2])),3));
+<span class="comment">% or in a single line:</span>
+life = @(R) logical(sum(cell2mat(reshape(cellfun(@and,cellfun(@(num)ismember(sum(reshape(cell2mat(cellfun(@circshift,{R,R,R,R,R,R,R,R,R},{[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]},<span class="string">'UniformOutput'</span>,false)),[size(R),9]),3),num),{3,4},<span class="string">'UniformOutput'</span>,false),{ones(size(R)),R},<span class="string">'UniformOutput'</span>,false),[1,1,2])),3));
+</pre><h2>Plotting<a name="6"></a></h2><pre class="codeinput">image(R);
+colormap([1 1 1 ; 0 0 1]);
+axis <span class="string">equal</span> <span class="string">tight</span>;
+
+<span class="keyword">for</span> n = 1:N
+    R = life(R);
+    imagesc(R);
+    axis <span class="string">equal</span> <span class="string">tight</span>;
+    title(sprintf(<span class="string">'%i of %i'</span>,n,N));
+    <span class="keyword">if</span> mod(n,plotSkip)==0
+        drawnow;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">
+ans =
+
+  Columns 1 through 13
+
+     0     0     0     0     0     1     1     0     0     0     0     0     0
+     0     0     0     0     1     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     1     0
+     0     0     0     0     0     0     0     0     0     0     1     0     1
+     0     0     0     0     0     0     0     0     0     0     1     0     1
+     0     0     0     0     0     0     0     0     0     0     0     1     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     1     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     1     1     0     0     0     0     0     0     0
+
+  Columns 14 through 26
+
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     1     1     0     0
+     0     0     0     0     0     0     0     0     0     1     1     0     0
+     0     0     0     0     1     1     1     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0     0     0     1     1
+     0     0     0     0     0     0     0     0     0     0     0     1     0
+     0     0     0     0     0     0     0     0     0     0     0     1     0
+     0     0     0     0     0     0     0     0     0     0     0     0     1
+
+  Columns 27 through 35
+
+     1     0     0     1     0     0     0     0     0
+     0     1     1     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0
+     0     0     0     0     0     0     0     0     0
+     0     0     0     0     1     1     1     0     0
+     0     0     0     0     1     0     0     1     0
+     1     1     1     0     1     1     1     1     1
+     0     0     1     0     0     0     1     0     1
+     0     0     0     0     0     0     1     0     1
+     0     0     1     0     0     0     1     1     0
+     0     0     1     0     0     0     0     0     0
+
+</pre><img vspace="5" hspace="5" src="life_01.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2012b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function R = life(N,R,env,plotSkip)
+%LIFE walks us through the APL rules of life [1] and tries to recreate them
+%
+%USAGE
+%   R = life
+%   R = life(N,R,env,plotSkip)
+%
+%INPUTS
+%   N <1x1 DOUBLE> is the number of generations to run in the program.
+%
+%   R <MxN DOUBLE> is the seed configuration you would like to plant.
+%
+%   env <2x1 DOUBLE> is the row and column sizes of the environment in
+%   which to embed the seed state R.
+%
+%   plotSkip <1x1 DOUBLE> is the number of steps to skip between plotting
+%   generations.
+%
+%OUTPUTS
+%   R <env(1)xenv(2) DOUBLE> is the final state of the program
+%
+%REFERENCES
+%   [1] http://youtu.be/a9xAKttWgP4
+%
+% See also
+%   ismember, circshift, reshape, cellfun, sum, cell2mat, logical
+
+%AUTHORSHIP
+%   Created by David Gross
+
+% Set default generation count
+if nargin < 1, N = 100; end
+
+% set default environment
+if nargin < 3, env = [15,35]; end
+
+% set default seed state
+if nargin < 2
+    % glider
+    % r = ismember(reshape(0:8,3,3)',[2 3 5 7 8]);
+    % f-pentomino
+    % r = ismember(reshape(0:8,3,3)',[1 3 4 5 6]);
+    % R = circshift( ...
+    %     [r,zeros(3,env(2)-3);zeros(env(1)-3,env(2))],floor((env-3)/2));
+    % Life in APL video
+    r = ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+    R = circshift( ...
+        [r,zeros(3,env(2)-3);zeros(env(1)-3,env(2))],floor((env-3)/2));
+end
+
+% set default plot skip
+if nargin < 4, plotSkip = 1; end
+
+%% Cells
+
+% vector of first 9 natural numbers
+0:8;
+% 3 x 3 reshape
+reshape(0:8,3,3)';
+% which items are members of 1 2 3 4 7 ?
+ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+% call it r
+r = ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+% 5 7 take of r (padding below and on the right with zeros)
+[r , zeros(3,7-3) ; zeros(5-3,7)];
+% center vertically
+circshift([r , zeros(3,7-3) ; zeros(5-3,7)],[0,2]);
+% % center horizontally
+circshift([r , zeros(3,7-3) ; zeros(5-3,7)],[1,2]);
+% call it R
+R = circshift( ...
+    [r,zeros(3,env(2)-3);zeros(env(1)-3,env(2))],floor((env-3)/2));
+% vector of three matrics
+{R,R,R};
+% rotate individually
+cellfun(@circshift,{R,R,R},{[-1,0],[0,0],[1,0]},'UniformOutput',false);
+% we can't really "enclose" R to be copied
+
+% outer product?  ok we can't do that either
+cellfun(@circshift,{R,R,R;R,R,R;R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1];[-1,0],[0,0],[1,0];[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false);
+% column sum alone? can't do that
+
+% row sum alone?  nope.  but we can do the whole thing, kind of
+sum(reshape(cell2mat(cellfun(@circshift, ...
+    {R,R,R,R,R,R,R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false)),[size(R),9]),3);
+% find the 3s and 4s
+cellfun(@(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, ...
+    {R,R,R,R,R,R,R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false)),[size(R),9]),3), ...
+    num),{3,4},'UniformOutput',false);
+% and the 4s with the original matrix
+cellfun(@and,cellfun( ...
+    @(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, ...
+    {R,R,R,R,R,R,R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false)),[size(R),9]),3), ...
+    num),{3,4},'UniformOutput',false), ...
+    {ones(size(R)),R},'UniformOutput',false);
+% or the results to get the next generation of life
+logical(sum(cell2mat(reshape(cellfun(@and,cellfun( ...
+    @(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, ...
+    {R,R,R,R,R,R,R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false)),[size(R),9]),3), ...
+    num),{3,4},'UniformOutput',false), ...
+    {ones(size(R)),R},'UniformOutput',false),[1,1,2])),3));
+
+%% Arrays
+
+% vector of first 9 natural numbers
+0:8;
+% 3 x 3 reshape
+reshape(0:8,3,3)';
+% which items are members of 1 2 3 4 7 ?
+ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+% call it r
+r = ismember(reshape(0:8,3,3)',[1 2 3 4 7]);
+% 5 7 take of r (padding below and on the right with zeros)
+[r , zeros(3,7-3) ; zeros(5-3,7)];
+% center vertically
+circshift([r , zeros(3,7-3) ; zeros(5-3,7)],[0,2]);
+% % center horizontally
+circshift([r , zeros(3,7-3) ; zeros(5-3,7)],[1,2]);
+% call it R
+R = circshift( ...
+    [r,zeros(3,env(2)-3);zeros(env(1)-3,env(2))],floor((env-3)/2));
+% vector of three matrics
+cat(3,R,R,R);
+% rotate individually
+% add extra padding (ENFORCES NON-TOROIDAL BOUNDARIES)
+bigR = [zeros(1,size(R,2)+2) ; ...
+    zeros(size(R,1),1) R zeros(size(R,1),1) ; zeros(1,size(R,2)+2)];
+cellfun(@circshift,{R,R,R},{[-1,0],[0,0],[1,0]},'UniformOutput',false);
+% we can't really "enclose" R to be copied
+ 
+% outer product?  ok we can't do that either
+cellfun(@circshift,{R,R,R;R,R,R;R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1];[-1,0],[0,0],[1,0];[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false);
+subsref(repmat(bigR,[3,3]),struct('type','()','subs',{{ ...
+    [1:env(1),env(1)+4:2*env(1)+3,2*env(1)+7:3*env(1)+6], ...
+    [1:env(2),env(2)+4:2*env(2)+3,2*env(2)+7:3*env(2)+6]}}));
+% column sum alone? can't do that
+ 
+% row sum alone?  nope.  but we can do the whole thing, kind of
+sum(reshape(cell2mat(cellfun(@circshift,{R,R,R,R,R,R,R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false)),[size(R),9]),3);
+sum(reshape(permute(reshape(subsref(repmat(bigR,[3,3]), ...
+    struct('type','()','subs',{{ ...
+    [1:env(1),env(1)+4:2*env(1)+3,2*env(1)+7:3*env(1)+6], ...
+    [1:env(2),env(2)+4:2*env(2)+3,2*env(2)+7:3*env(2)+6]}})), ...
+    [size(R,1),3,size(R,2),3]),[1,3,2,4]),[size(R),9]),3);
+% find the 3s and 4s
+cellfun(@(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, ...
+    {R,R,R,R,R,R,R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false)),[size(R),9]),3), ...
+    num),{3,4},'UniformOutput',false);
+% and the 4s with the original matrix
+cellfun(@and,cellfun( ...
+    @(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, ...
+    {R,R,R,R,R,R,R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false)),[size(R),9]),3), ...
+    num),{3,4},'UniformOutput',false), ...
+    {ones(size(R)),R},'UniformOutput',false);
+% or the results to get the next generation of life
+logical(sum(cell2mat(reshape(cellfun(@and,cellfun( ...
+    @(num)ismember(sum(reshape(cell2mat(cellfun(@circshift, ...
+    {R,R,R,R,R,R,R,R,R}, ...
+    {[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+    'UniformOutput',false)),[size(R),9]),3), ...
+    num),{3,4},'UniformOutput',false), ...
+    {ones(size(R)),R},'UniformOutput',false),[1,1,2])),3));
+
+%% Finally
+
+% APL says:
+'life ? {?1 ? ?.? 3 4 = +/ +?? 1 0 -1 ?.? 1 0 -1 ?¨ ? ?}';
+% MATLAB cellfun says:
+life = @(R) logical(sum(cell2mat(reshape(cellfun(@and,cellfun(@(num) ...
+ismember(sum(reshape(cell2mat(cellfun(@circshift,{R,R,R,R,R,R,R,R,R},...
+{[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+'UniformOutput',false)),[size(R),9]),3),num),{3,4},'UniformOutput', ...
+false),{ones(size(R)),R},'UniformOutput',false),[1,1,2])),3));
+% What if matlab commands were name with only one letter
+% A = and
+% C = circshfit
+% f = false
+% F = cellfun
+% I = ismember
+% L = logical
+% M = cell2mat
+% O = ones
+% P = repmat
+% R = reshape
+% S = sum
+% U = 'UniformOutput'
+% Z = size
+life = @(R) L(S(M(R(F(@A,F(@(N)I(S(R(M(F(@C,P({R},[1,9]),...
+{[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]}, ...
+U,f)),[S(R),9]),3),N),{3,4},U,f),{O(Z(R)),R},U,f),[1,1,2])),3));
+% or in a single line:
+life = @(R) logical(sum(cell2mat(reshape(cellfun(@and,cellfun(@(num)ismember(sum(reshape(cell2mat(cellfun(@circshift,{R,R,R,R,R,R,R,R,R},{[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]},'UniformOutput',false)),[size(R),9]),3),num),{3,4},'UniformOutput',false),{ones(size(R)),R},'UniformOutput',false),[1,1,2])),3));
+
+%% Plotting
+
+image(R);
+colormap([1 1 1 ; 0 0 1]);
+axis equal tight;
+
+for n = 1:N
+    R = life(R);
+    imagesc(R);
+    axis equal tight;
+    title(sprintf('%i of %i',n,N));
+    if mod(n,plotSkip)==0
+        drawnow;
+    end
+end
+##### SOURCE END #####
+--></body></html>
